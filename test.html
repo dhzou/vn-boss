@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>无标题文档</title>
+</head>
+<style>
+header, footer, main {
+display: block;
+}
+
+header {
+position: fixed;
+height: 100px;
+background: 'red',
+left: 0;
+right: 0;
+top: 0;
+}
+
+footer {
+position: fixed;
+height: 34px;
+left: 0;
+right: 0;
+bottom: 0;
+}
+
+main {
+/ main绝对定位，进行内部滚动 /
+position: absolute;
+top: 50px;
+bottom: 34px;
+/ 使之可以滚动 /
+overflow-y: scroll;
+width:300px;
+border:#3299D3 5px solid; / main区分 /
+}
+
+main .content {
+height: 2000px;
+border:#A45052 5px solid;/ .content区分 /
+width:90px;
+}
+</style>
+
+<body class="layout-scroll-fixed">
+    <!-- fixed定位的头部 -->
+    <header style="background: 'red'">
+        </header>
+
+
+<main>
+    <div class="content">
+           <input type="text" placeholder="Footer..."/>
+    <!-- 测试看看... -->
+    </div>
+</main>
+
+<!-- fixed定位的底部 -->
+<footer>
+    <input type="text" placeholder="Footer..."/>
+    <button class="submit">提交</button>
+</footer>
+</body>
+</html>
