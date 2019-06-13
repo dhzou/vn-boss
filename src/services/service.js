@@ -22,3 +22,6 @@ export const userInfo = params => {
 export const postproductData = params => {
   return axios.post("/dataResult/testUserResults",params);
 }
+export const getProduct = params =>{
+  return axios.get ('/dataResult/getProduct');
+}

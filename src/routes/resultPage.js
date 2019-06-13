@@ -1,16 +1,13 @@
 import React from "react";
-import {
-  Button,
-  Modal,
-  SearchBar,
-  NavBar,
-  List,
-  Icon,
-  Toast
-} from "antd-mobile";
+import { Modal, SearchBar, List, Toast } from "antd-mobile";
 import { isAuthenticated } from "../utils/session";
 import { createHashHistory } from "history";
-import { search, userInfo, postproductData } from "../services/service";
+import {
+  search,
+  userInfo,
+  postproductData,
+  getProduct
+} from "../services/service";
 const Item = List.Item;
 const prompt = Modal.prompt;
 const img = [
@@ -20,7 +17,7 @@ const img = [
   "https://www.wegene.com/static/dist/svg/response_to_exercise.svg",
   "https://www.wegene.com/static/dist/svg/sports_protection.svg"
 ];
-const defaultData = [
+var defaultData = [
   {
     id: 1,
     name: "血压",
@@ -510,6 +507,10 @@ class resultPage extends React.Component {
           text: "确定",
           onPress: value =>
             new Promise((resolve, reject) => {
+              if (!value) {
+                Toast.info("请输入数据");
+                reject();
+              }
               var productList = [
                 {
                   name: item.name,
@@ -554,6 +555,11 @@ class resultPage extends React.Component {
       const userInfo = JSON.parse(cookies);
       this.batchNum = userInfo.batchNum;
     }
+    getProduct().then(data=>{
+      if(data.data.status === 0) {
+        defaultData = data.data.data;
+      } 
+    })
   }
 
   searchInfoByUserId = () => {
@@ -608,15 +614,7 @@ class resultPage extends React.Component {
   render() {
     return (
       <div>
-        <NavBar
-          style={{ position: "fixed", width: "100%" ,zIndex:100}}
-          mode="dark"
-          icon={<Icon type="left" />}
-          onLeftClick={this.goBack}
-        >
-          查找
-        </NavBar>
-        <div style={{position: 'absolute',top:45,left:0,right:0}}>
+        <div>
           <SearchBar
             value={this.state.value}
             placeholder="请输入用户编码"
