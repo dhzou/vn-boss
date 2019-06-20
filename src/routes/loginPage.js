@@ -13,8 +13,8 @@ class loginPage extends React.Component {
     };
   }
   componentDidMount(){
-    console.log('11111');
-   const cookies = isAuthenticated();
+    document.title="登陆";
+    const cookies = isAuthenticated();
    if (cookies) {
     const userInfo = JSON.parse(cookies);
     this.setState({userName:userInfo.username,password:userInfo.password})

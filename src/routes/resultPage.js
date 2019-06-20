@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, SearchBar, List, Toast } from "antd-mobile";
+import { Modal, SearchBar, List, InputItem, Toast } from "antd-mobile";
 import { isAuthenticated } from "../utils/session";
 import { createHashHistory } from "history";
 import {
@@ -487,9 +487,23 @@ class resultPage extends React.Component {
     this.state = {
       productData: [],
       value: "",
-      userInfo: ""
+      userInfo: "",
+      modal: false,
+      modalData: {
+        title: "",
+        id: "",
+        dataProductIndices: []
+      }
     };
   }
+
+  showModal = (e, item) => {
+    e.preventDefault(); // 修复 Android 上点击穿透
+    console.log("item=", item);
+    this.setState({
+      modal: true
+    });
+  };
 
   handleClick = (item, sub) => {
     return prompt(
@@ -546,22 +560,48 @@ class resultPage extends React.Component {
       ],
       "default",
       sub.value,
-      ["请输入测试值"]
+      ["请输入测试值", "input"]
     );
   };
   componentDidMount() {
+    document.title = "数据录入";
     const cookies = isAuthenticated();
     if (cookies) {
       const userInfo = JSON.parse(cookies);
       this.batchNum = userInfo.batchNum;
     }
-    getProduct().then(data=>{
-      if(data.data.status === 0) {
+    getProduct().then(data => {
+      if (data.data.status === 0) {
         defaultData = data.data.data;
-      } 
-    })
+      }
+    });
   }
 
+  postProductData() {
+    var productList = [
+      {
+        name: this.state.modalData.title,
+        dataProductIndices: this.state.modalData.dataProductIndices
+      }
+    ];
+    postproductData({
+      batchNum: this.batchNum,
+      testUserCode: this.state.value,
+      productList: productList
+    }).then(data => {
+      if (data && data.data && data.data.status === 0) {
+        const newData = [...this.state.productData];
+        newData.forEach(preItem => {
+          if (this.state.modalData.id === preItem.id) {
+            preItem.dataProductIndices = productList[0].dataProductIndices;
+          }
+        });
+        this.setState({ productData: newData, modal: false });
+      } else {
+        Toast.info("录入数据失败");
+      }
+    });
+  }
   searchInfoByUserId = () => {
     if (!this.state.value) {
       Toast.info("请输入用户id");
@@ -614,6 +654,61 @@ class resultPage extends React.Component {
   render() {
     return (
       <div>
+        <Modal
+          visible={this.state.modal}
+          transparent
+          maskClosable={false}
+          onClose={() => {
+            this.setState({ modal: false });
+          }}
+          title={this.state.modalData.title}
+          footer={[
+            {
+              text: "取消",
+              onPress: () => {
+                this.setState({ modal: false });
+              }
+            },
+            {
+              text: "确定",
+              onPress: () => {
+                this.postProductData();
+              }
+            }
+          ]}
+          wrapProps={{ onTouchStart: this.onWrapTouchStart }}
+          afterClose={() => {
+            // this.setState({
+            //   modalData: {
+            //     title: "",
+            //     id: "",
+            //     dataProductIndices: []
+            //   }
+            // });
+          }}
+        >
+          <div style={{ minHeight: 100, overflow: "scroll" }}>
+            {this.state.modalData.dataProductIndices.map((item, index) => {
+              return (
+                <InputItem
+                  key={item.id}
+                  value={item.value}
+                  onChange={ev => {
+                    const data = [...this.state.modalData.dataProductIndices];
+                    data[index].value = ev;
+                    this.setState({
+                      modal: {
+                        dataProductIndices: data
+                      }
+                    });
+                  }}
+                >
+                  {item.name}
+                </InputItem>
+              );
+            })}
+          </div>
+        </Modal>
         <div>
           <SearchBar
             value={this.state.value}
@@ -686,6 +781,18 @@ class resultPage extends React.Component {
                         alignItems: "center",
                         height: 40
                       }}
+                      onClick={ev => {
+                        ev.preventDefault(); // 修复 Android 上点击穿透
+                        const a =  JSON.parse(JSON.stringify(item.dataProductIndices));
+                        this.setState({
+                          modal: true,
+                          modalData: {
+                            title: item.name,
+                            id: item.id,
+                            dataProductIndices: a
+                          }
+                        });
+                      }}
                     >
                       <img width="26" alt="" src={img[index % 5]} />
                       <p style={{ marginLeft: 10 }}>{item.name}</p>
@@ -693,11 +800,14 @@ class resultPage extends React.Component {
                     <List className="my-list">
                       {item.dataProductIndices &&
                         item.dataProductIndices.map(sub => {
+                          const value =
+                            (sub.value ? sub.value : 0) +
+                            (sub.unit ? sub.unit : "");
                           return (
                             <Item
                               key={sub.id}
-                              extra={sub.value + sub.unit}
-                              onClick={() => this.handleClick(item, sub)}
+                              extra={value}
+                              // onClick={() => this.handleClick(item, sub)}
                             >
                               {sub.name}
                             </Item>
