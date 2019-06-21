@@ -693,6 +693,7 @@ class resultPage extends React.Component {
                 <InputItem
                   key={item.id}
                   value={item.value}
+                  style={{border:'0.5px solid #ddd',paddingLeft:10}}
                   onChange={ev => {
                     const data = [...this.state.modalData.dataProductIndices];
                     data[index].value = ev;
@@ -768,6 +769,18 @@ class resultPage extends React.Component {
               this.state.productData.map((item, index) => {
                 return (
                   <div
+                  onClick={ev => {
+                    ev.preventDefault(); // 修复 Android 上点击穿透
+                    const a =  JSON.parse(JSON.stringify(item.dataProductIndices));
+                    this.setState({
+                      modal: true,
+                      modalData: {
+                        title: item.name,
+                        id: item.id,
+                        dataProductIndices: a
+                      }
+                    });
+                  }}
                     key={item.id}
                     style={{
                       padding: "0 10px",
@@ -781,18 +794,7 @@ class resultPage extends React.Component {
                         alignItems: "center",
                         height: 40
                       }}
-                      onClick={ev => {
-                        ev.preventDefault(); // 修复 Android 上点击穿透
-                        const a =  JSON.parse(JSON.stringify(item.dataProductIndices));
-                        this.setState({
-                          modal: true,
-                          modalData: {
-                            title: item.name,
-                            id: item.id,
-                            dataProductIndices: a
-                          }
-                        });
-                      }}
+          
                     >
                       <img width="26" alt="" src={img[index % 5]} />
                       <p style={{ marginLeft: 10 }}>{item.name}</p>
